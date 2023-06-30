@@ -8,9 +8,6 @@ const modalRoot = document.querySelector('#modal-root');
 export const Modal = ({ onClose, url }) => {
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
-  }, []);
-
-  useEffect(() => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
