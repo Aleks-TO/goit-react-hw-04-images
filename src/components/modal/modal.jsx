@@ -11,7 +11,7 @@ export const Modal = ({ onClose, url }) => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [onClose]);
 
   function handleKeyDown(event) {
     if (event.code === 'Escape') {
