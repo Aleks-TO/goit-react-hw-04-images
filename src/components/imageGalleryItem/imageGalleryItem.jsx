@@ -1,6 +1,6 @@
 import css from './imageGalleryItem.module.css';
 import PropTypes from 'prop-types';
-import React, { Component, useState } from 'react';
+import React, { useState } from 'react';
 import { Modal } from '../modal/modal';
 
 export const ImageGalleryItem = ({ smallImg, description, bigImg }) => {

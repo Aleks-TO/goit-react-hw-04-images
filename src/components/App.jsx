@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import Searchbar from './searchbar/searchbar';
 import { fetchPictures } from 'API/api';
 import ImageGallery from './imageGallery/imageGallery';
@@ -6,81 +6,65 @@ import Loader from './loader/loader';
 import { Button } from './button/button';
 import css from './App.module.css';
 
-export class App extends Component {
-  state = {
-    images: [],
-    page: 1,
-    name: '',
-    isEmpty: true,
-    isVisible: false,
-    error: null,
-    isLoading: false,
-    showModal: false,
-    selectedImage: null,
-  };
+export function App() {
+  const [images, setImages] = useState([]);
+  const [page, setPage] = useState(1);
+  const [name, setName] = useState('');
+  const [isEmpty, setIsEmpty] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  // const [showModal, setShowModal] = useState(false);
+  // const [selectedImage, setSelectedImage] = useState(null);
 
-  componentDidUpdate(_, prevState) {
-    const { name, page } = this.state;
+  useEffect(() => {
+    getPhoto(name, page);
+  }, [name, page]);
 
-    if (prevState.name !== name || prevState.page !== page) {
-      this.getPhoto(name, page);
-    }
-  }
-
-  onSubmit = value => {
-    if (value === this.state.name) {
-      return alert('Please write another name');
-    }
-    this.setState({
-      images: [],
-      name: value,
-      page: 1,
-      isEmpty: true,
-      isVisible: false,
-      error: null,
-    });
-  };
-
-  getPhoto = async (name, page) => {
+  async function getPhoto(name, page) {
     if (!name) {
       return;
     }
-    this.setState({ isLoading: true });
+    setIsLoading(true);
     try {
       const { hits, totalHits } = await fetchPictures(name, page);
       if (hits === 0) {
-        this.setState({ isEmpty: true });
+        setIsEmpty(true);
       }
-      this.setState(prevState => ({
-        images: [...prevState.images, ...hits],
-        isEmpty: false,
-        isVisible: Math.ceil(totalHits / 12),
-      }));
+      setImages(prevImg => [...prevImg, ...hits]);
+      setIsEmpty(false);
+      setIsVisible(Math.ceil(totalHits / 12));
     } catch (error) {
       console.log(error);
-      this.setState({ error: error.message });
+      setError(error.message);
     } finally {
-      this.setState({
-        isLoading: false,
-      });
+      setIsLoading(false);
     }
-  };
-
-  onLoadMore = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
-  };
-
-  render() {
-    const { images, isEmpty, isVisible, error, isLoading } = this.state;
-    return (
-      <div className={css.app}>
-        <Searchbar onSubmit={this.onSubmit} />
-        {isEmpty && <p className={css.text}>Sorry, there are no images...</p>}
-        {error && <p className={css.text}>Sorry, {error}</p>}
-        <ImageGallery images={images} />
-        {isVisible &&
-          (isLoading ? <Loader /> : <Button onClick={this.onLoadMore} />)}
-      </div>
-    );
   }
+
+  const onSubmit = value => {
+    if (value === name) {
+      return alert('Please write another name');
+    }
+    setImages([]);
+    setName(value);
+    setPage(1);
+    setIsEmpty(true);
+    setIsVisible(false);
+    setError(null);
+  };
+
+  const onLoadMore = () => {
+    setPage(prevPage => prevPage + 1);
+  };
+
+  return (
+    <div className={css.app}>
+      <Searchbar onSubmit={onSubmit} />
+      {isEmpty && <p className={css.text}>Sorry, there are no images...</p>}
+      {error && <p className={css.text}>Sorry, {error}</p>}
+      <ImageGallery images={images} />
+      {isVisible && (isLoading ? <Loader /> : <Button onClick={onLoadMore} />)}
+    </div>
+  );
 }
